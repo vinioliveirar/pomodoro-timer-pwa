@@ -32,7 +32,9 @@ export default function Timer(){
   return(
     <div>
       <h2>{formatTime(time)}</h2>
-      <button onClick={toggleTimer}>{isRunning ? "Pausar" : "Iniciar"}</button>
+      <button onClick={() => setIsRunning(true)}>Iniciar</button>
+      <button onClick={() => setIsRunning(false)}>Pausar</button>
+      <button onClick={()=> setTime(1500) } >Resetar</button>
     </div>
   )
 }
