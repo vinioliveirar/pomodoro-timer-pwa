@@ -69,54 +69,37 @@ export default function Timer() {
   }
 
   return (
-    <section>
+    <section className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white">
+      <div className="bg-gray-800/80 p-8 rounded-2xl shadow-lg w-full max-w-md text-center">
+        <h2 className="text-2xl font-bold mb-2">
+          {isBreak ? "Hora da Pausa! ☕" : "Hora de Focar! 🚀"}
+        </h2>
+        <h3 className="text-lg font-semibold text-gray-300 mb-4">
+          {isBreak ? "Pausa" : `Ciclo de Foco: ${focusCycles + 1}`}
+        </h3>
 
-      <h2 className="text-xl font-bold">{isBreak ? "Hora da Pausa! ☕" : "Hora de Focar! 🚀"}</h2>
-      <h3 className="text-lg font-semibold">
-        {isBreak ? "Pausa" : `Ciclo de Foco: ${focusCycles + 1}`}
-      </h3>
+        <h2 className="text-6xl font-bold mb-6">{formatTime(time)}</h2>
 
-      <h2>{formatTime(time)}</h2>
-      <div>
-        <button
-          className={`px-4 py-2 rounded-md m-2 text-white ${isRunning ? "bg-yellow-500" : "bg-green-500"
-            }`}
-          onClick={() => setIsRunning((prev) => !prev)} >
-          {time === 0 ? "Iniciar Pausa" : isRunning ? "Pausar" : "Iniciar"}
-        </button>
-        {isRunning && (
+        <div className="flex gap-4 justify-center">
           <button
-            className="px-4 py-2 bg-purple-500 text-white rounded-md hover:bg-purple-600 transition"
-            onClick={handleSkip}
+            className={`px-6 py-3 rounded-lg font-semibold text-white transition ${isRunning ? "bg-yellow-500 hover:bg-yellow-600" : "bg-green-500 hover:bg-green-600"
+              }`}
+            onClick={() => setIsRunning((prev) => !prev)}
           >
-            Pular ⏩
+            {time === 0 ? "Iniciar Pausa" : isRunning ? "Pausar" : "Iniciar"}
           </button>
-        )}
 
-
-        {/* <button
-          className="bg-yellow-500 text-white px-4 py-2 rounded-md m-2"
-          onClick={() => setIsRunning(false)}>
-          Pausar
-        </button>
-        <button
-          className="bg-red-500 text-white px-4 py-2 rounded-md m-2"
-          onClick={() => setTime(1500)}>
-          Resetar
-        </button>
-        <button
-          className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition"
-          onClick={handleShortBreak}>
-          Short Break ☕
-        </button> 
-        {time === 0 && !isBreak && (
-          <button
-            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition"
-            onClick={handleShortBreak}>
-            Iniciar Pausa ☕
-          </button>
-        )}*/}
+          {isRunning && (
+            <button
+              className="px-6 py-3 bg-purple-500 hover:bg-purple-600 text-white rounded-lg font-semibold transition"
+              onClick={handleSkip}
+            >
+              Pular ⏩
+            </button>
+          )}
+        </div>
       </div>
     </section>
   );
+
 }
