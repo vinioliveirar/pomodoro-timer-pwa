@@ -1,54 +1,60 @@
 import { useState, useEffect } from "react";
+import beepSound from "../../assets/sounds/beep.mp3";
 
 export default function Timer() {
   const [time, setTime] = useState(0.1 * 60); // 25 minutos em segundos
   const [isRunning, setIsRunning] = useState(false); //controle do time rodando
   const [isBreak, setIsBreak] = useState(false); //controla a pausa
-
-  const playAlarm = () => {
-    const alarmSound = new Audio("/beep.mp3");
-    alarmSound.play().catch((error) => console.error("Erro ao reproduzir som:", error));
-  };
-
-  useEffect(() => {
-    if (time === 0) {
-      playAlarm();
-      setIsRunning(false);
-    }
-  }, [time]);
+  const [focusCycles, setFocusCycles] = useState(0); //contador de ciclos
 
   useEffect(() => {
     let interval;
 
-    if (isRunning) {
+    if (isRunning && time > 0) {
       interval = setInterval(() => {
-        setTime((prevTime) => {
-          if (prevTime === 0) {
-            setIsBreak((prev) => !prev);
-            return isBreak ? 1500 : 300;
-          }
-          return prevTime - 1;
-        });
+        setTime((prevTime) => prevTime - 1);
       }, 1000);
-    } else {
-      clearInterval(interval);
+    } else if (time === 0) {
+      playAlarm();
+      setIsRunning(false);
+
+      if (!isBreak) {
+        setFocusCycles((prevCycles) => prevCycles + 1); // Aumenta ciclo após foco
+      }
+
+      setIsBreak((prev) => !prev);
+
+      if (!isBreak && focusCycles >= 3) {
+        setFocusCycles(0); // Reseta contador após o long break
+        setTime(900); // 15 minutos (Long Break)
+      } else {
+        setTime(isBreak ? 1500 : 300); // 25 min foco / 5 min pausa
+      }
     }
+
     return () => clearInterval(interval);
-  }, [isRunning, isBreak]);
+  }, [isRunning, time, isBreak, focusCycles]);
+
 
   /*function toggleTimer() {
     setIsRunning(!isRunning);
   }*/
 
-  const handleShortBreak = () => {
-    if (isBreak) {
-      setIsBreak(false);
-      setTime(1500); // 25 min para trabalho
-    } else {
-      setIsBreak(true);
-      setTime(300); // 5 min para pausa
-    }
-    setIsRunning(false); // Sempre pausa ao trocar
+  /* const handleShortBreak = () => {
+     if (isBreak) {
+       setIsBreak(false);
+       setTime(1500); // 25 min para trabalho
+     } else {
+       setIsBreak(true);
+       setTime(300); // 5 min para pausa
+     }
+     setIsRunning(false); // Sempre pausa ao trocar
+   };*/
+
+  //função que faz o som
+  const playAlarm = () => {
+    const alarmSound = new Audio(beepSound);
+    alarmSound.play().catch((error) => console.error("Erro ao reproduzir som:", error));
   };
 
   //função que formata o tempo
@@ -61,7 +67,12 @@ export default function Timer() {
 
   return (
     <section>
+
       <h2 className="text-xl font-bold">{isBreak ? "Hora da Pausa! ☕" : "Hora de Focar! 🚀"}</h2>
+      <h3 className="text-lg font-semibold">
+        {isBreak ? "Pausa" : `Ciclo de Foco: ${focusCycles + 1}`}
+      </h3>
+
       <h2>{formatTime(time)}</h2>
       <div>
         <button
