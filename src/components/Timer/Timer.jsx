@@ -36,20 +36,23 @@ export default function Timer() {
   }, [isRunning, time, isBreak, focusCycles]);
 
 
-  /*function toggleTimer() {
-    setIsRunning(!isRunning);
-  }*/
-
-  /* const handleShortBreak = () => {
-     if (isBreak) {
-       setIsBreak(false);
-       setTime(1500); // 25 min para trabalho
-     } else {
-       setIsBreak(true);
-       setTime(300); // 5 min para pausa
-     }
-     setIsRunning(false); // Sempre pausa ao trocar
-   };*/
+  //função de pular ciclo ou break
+  const handleSkip = () => {
+    if (isBreak) {
+      setIsBreak(false)
+      setTime(1500)
+    } else {
+      if (focusCycles >= 3) {
+        setFocusCycles(0)
+        setTime(900)
+      } else {
+        setFocusCycles((prev) => prev + 1)
+        setTime(300);
+      }
+      setIsBreak(true)
+    }
+    setIsRunning(false);
+  }
 
   //função que faz o som
   const playAlarm = () => {
@@ -81,6 +84,14 @@ export default function Timer() {
           onClick={() => setIsRunning((prev) => !prev)} >
           {time === 0 ? "Iniciar Pausa" : isRunning ? "Pausar" : "Iniciar"}
         </button>
+        {isRunning && (
+          <button
+            className="px-4 py-2 bg-purple-500 text-white rounded-md hover:bg-purple-600 transition"
+            onClick={handleSkip}
+          >
+            Pular ⏩
+          </button>
+        )}
 
 
         {/* <button
