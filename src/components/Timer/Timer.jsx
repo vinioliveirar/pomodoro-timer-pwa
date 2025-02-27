@@ -2,71 +2,105 @@ import { useState, useEffect } from "react";
 import beepSound from "../../assets/sounds/beep.mp3";
 
 export default function Timer() {
-  const [time, setTime] = useState(0.1 * 60); // 25 minutos em segundos
-  const [isRunning, setIsRunning] = useState(false); //controle do time rodando
-  const [isBreak, setIsBreak] = useState(false); //controla a pausa
-  const [focusCycles, setFocusCycles] = useState(0); //contador de ciclos
+  const [time, setTime] = useState(() => {
+    const savedTime = localStorage.getItem("pomodoroTime");
+    return savedTime ? parseInt(savedTime, 10) : 1500;
+  });
+
+  const [isBreak, setIsBreak] = useState(() => {
+    const savedBreak = localStorage.getItem("isBreak");
+    return savedBreak === "true"; // Converte string para booleano
+  });
+
+  const [isRunning, setIsRunning] = useState(false);
+  const [focusCycles, setFocusCycles] = useState(() => {
+    const savedCycles = localStorage.getItem("focusCycles");
+    return savedCycles ? parseInt(savedCycles, 10) : 0;
+  });
+
+  const maxTime = isBreak ? (focusCycles >= 3 ? 900 : 300) : 1500; // 15min, 5min ou 25min
 
   useEffect(() => {
     let interval;
-
     if (isRunning && time > 0) {
       interval = setInterval(() => {
-        setTime((prevTime) => prevTime - 1);
+        setTime((prevTime) => {
+          const newTime = prevTime - 1;
+          localStorage.setItem("pomodoroTime", newTime);
+          return newTime;
+        });
       }, 1000);
     } else if (time === 0) {
       playAlarm();
       setIsRunning(false);
+      localStorage.removeItem("pomodoroTime");
 
       if (!isBreak) {
-        setFocusCycles((prevCycles) => prevCycles + 1); // Aumenta ciclo após foco
+        setFocusCycles((prevCycles) => prevCycles + 1);
       }
 
-      setIsBreak((prev) => !prev);
+      setIsBreak((prev) => {
+        const newBreakState = !prev;
+        localStorage.setItem("isBreak", newBreakState);
+        return newBreakState;
+      });
 
       if (!isBreak && focusCycles >= 3) {
-        setFocusCycles(0); // Reseta contador após o long break
-        setTime(900); // 15 minutos (Long Break)
+        setFocusCycles(0);
+        setTime(900);
+        localStorage.removeItem("isBreak");
       } else {
-        setTime(isBreak ? 1500 : 300); // 25 min foco / 5 min pausa
+        setTime(isBreak ? 1500 : 300);
       }
     }
 
     return () => clearInterval(interval);
   }, [isRunning, time, isBreak, focusCycles]);
 
+  useEffect(() => {
+    localStorage.setItem("focusCycles", focusCycles);
+    localStorage.setItem("isBreak", isBreak);
+  }, [focusCycles, isBreak]);
 
-  //função de pular ciclo ou break
   const handleSkip = () => {
     if (isBreak) {
-      setIsBreak(false)
-      setTime(1500)
+      setIsBreak(false);
+      setTime(1500);
     } else {
       if (focusCycles >= 3) {
-        setFocusCycles(0)
-        setTime(900)
+        setFocusCycles(0);
+        setTime(900);
       } else {
-        setFocusCycles((prev) => prev + 1)
+        setFocusCycles((prev) => prev + 1);
         setTime(300);
       }
-      setIsBreak(true)
+      setIsBreak(true);
     }
     setIsRunning(false);
-  }
+  };
 
-  //função que faz o som
+  const resetTimer = () => {
+    setTime(1500);
+    setIsBreak(false);
+    setIsRunning(false);
+    setFocusCycles(0);
+    localStorage.removeItem("pomodoroTime");
+    localStorage.removeItem("isBreak");
+    localStorage.removeItem("focusCycles");
+  };
+
   const playAlarm = () => {
     const alarmSound = new Audio(beepSound);
     alarmSound.play().catch((error) => console.error("Erro ao reproduzir som:", error));
   };
 
-  //função que formata o tempo
   function formatTime(seconds) {
-    const minutes = Math.floor(seconds / 60); //arredonda para baixo, deixando num inteiro
+    const minutes = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${String(minutes).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
-    //garante que os minutos e segundos tenha 2 digitos
   }
+
+  const progress = (time / maxTime) * 100; // Calcula a % do tempo restante
 
   return (
     <section className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white">
@@ -79,6 +113,17 @@ export default function Timer() {
         </h3>
 
         <h2 className="text-6xl font-bold mb-6">{formatTime(time)}</h2>
+
+        {/* Barra de Progresso */}
+        <div className="w-full h-4 bg-gray-700 rounded-lg overflow-hidden mb-4">
+          <div
+            className="h-full transition-all duration-500"
+            style={{
+              width: `${progress}%`,
+              backgroundColor: isBreak ? "#F7CA11" : "#3442B5", // Amarelo na pausa, Azul no foco
+            }}
+          ></div>
+        </div>
 
         <div className="flex gap-4 justify-center">
           <button
@@ -97,9 +142,15 @@ export default function Timer() {
               Pular ⏩
             </button>
           )}
+
+          <button
+            className="px-6 py-3 bg-red-500 hover:bg-red-600 text-white rounded-lg font-semibold transition"
+            onClick={resetTimer}
+          >
+            Resetar 🔄
+          </button>
         </div>
       </div>
     </section>
   );
-
 }
