@@ -1,11 +1,21 @@
 import { useState, useEffect } from "react";
 
 export default function Timer() {
-  const [time, setTime] = useState(25 * 60); // 25 minutos em segundos
-  const [isRunning, setIsRunning] =
-    useState(false); //controle do time rodando
+  const [time, setTime] = useState(0.1 * 60); // 25 minutos em segundos
+  const [isRunning, setIsRunning] = useState(false); //controle do time rodando
+  const [isBreak, setIsBreak] = useState(false); //controla a pausa
 
-  const [isBreak, setIsBreak] = useState(false);
+  const playAlarm = () => {
+    const alarmSound = new Audio("/beep.mp3");
+    alarmSound.play().catch((error) => console.error("Erro ao reproduzir som:", error));
+  };
+
+  useEffect(() => {
+    if (time === 0) {
+      playAlarm();
+      setIsRunning(false);
+    }
+  }, [time]);
 
   useEffect(() => {
     let interval;
@@ -18,8 +28,7 @@ export default function Timer() {
             return isBreak ? 1500 : 300;
           }
           return prevTime - 1;
-        }
-        );
+        });
       }, 1000);
     } else {
       clearInterval(interval);
@@ -42,7 +51,6 @@ export default function Timer() {
     setIsRunning(false); // Sempre pausa ao trocar
   };
 
-
   //função que formata o tempo
   function formatTime(seconds) {
     const minutes = Math.floor(seconds / 60); //arredonda para baixo, deixando num inteiro
@@ -53,35 +61,39 @@ export default function Timer() {
 
   return (
     <section>
-      <h2 className="text-xl font-bold">
-        {isBreak ? "Hora da Pausa! ☕" : "Hora de Focar! 🚀"}
-      </h2>
+      <h2 className="text-xl font-bold">{isBreak ? "Hora da Pausa! ☕" : "Hora de Focar! 🚀"}</h2>
       <h2>{formatTime(time)}</h2>
       <div>
         <button
-          className="bg-green-500 text-white px-4 py-2 rounded-md m-2"
-          onClick={() => setIsRunning(true)}
-        >
-          Iniciar
+          className={`px-4 py-2 rounded-md m-2 text-white ${isRunning ? "bg-yellow-500" : "bg-green-500"
+            }`}
+          onClick={() => setIsRunning((prev) => !prev)} >
+          {time === 0 ? "Iniciar Pausa" : isRunning ? "Pausar" : "Iniciar"}
         </button>
-        <button
+
+
+        {/* <button
           className="bg-yellow-500 text-white px-4 py-2 rounded-md m-2"
-          onClick={() => setIsRunning(false)}
-        >
+          onClick={() => setIsRunning(false)}>
           Pausar
         </button>
         <button
           className="bg-red-500 text-white px-4 py-2 rounded-md m-2"
-          onClick={() => setTime(1500)}
-        >
+          onClick={() => setTime(1500)}>
           Resetar
         </button>
         <button
           className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition"
-          onClick={handleShortBreak}
-        >
+          onClick={handleShortBreak}>
           Short Break ☕
-        </button>
+        </button> 
+        {time === 0 && !isBreak && (
+          <button
+            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition"
+            onClick={handleShortBreak}>
+            Iniciar Pausa ☕
+          </button>
+        )}*/}
       </div>
     </section>
   );
