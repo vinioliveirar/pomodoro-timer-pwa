@@ -1,82 +1,88 @@
 import { useState, useEffect } from "react";
 
 export function usePomodoroTimer() {
-  // Estados principais
-  const [time, setTime] = useState(25 * 60); // Tempo inicial (25 min)
+  const focusDuration = 25 * 60; // 25 minutos
+  const shortBreakDuration = 5 * 60; // 5 minutos
+  const longBreakDuration = 15 * 60; // 15 minutos
+  const cyclesBeforeLongBreak = 4;
+
+  const [time, setTime] = useState(focusDuration);
   const [isRunning, setIsRunning] = useState(false);
+  const [isBreak, setIsBreak] = useState(false);
   const [focusCycles, setFocusCycles] = useState(0);
-  const [progress, setProgress] = useState(0);
+  const [progress, setProgress] = useState(100);
 
-  // Novo estado: controla o modo atual (Pomodoro, Short Break, Long Break)
-  const [mode, setMode] = useState("focus"); // "focus", "shortBreak", "longBreak"
-
-  // Define os tempos padrões para cada modo
-  const modeDurations = {
-    focus: 25 * 60, // 25 minutos para Pomodoro
-    shortBreak: 5 * 60, // 5 minutos para Pausa Curta
-    longBreak: 15 * 60, // 15 minutos para Pausa Longa
-  };
-
-  // Atualiza o tempo quando o modo muda
-  useEffect(() => {
-    setTime(modeDurations[mode]);
-    setIsRunning(false); // Para a contagem ao mudar de modo
-  }, [mode]);
-
-  // Atualiza o temporizador a cada segundo quando está rodando
+  // Atualiza o tempo e o progresso do timer
   useEffect(() => {
     if (!isRunning) return;
 
     const interval = setInterval(() => {
       setTime((prevTime) => {
-        if (prevTime <= 0) {
+        if (prevTime <= 1) {
           clearInterval(interval);
-          handleSkip(); // Pula para o próximo ciclo automaticamente
+          handleSkip();
           return 0;
         }
         return prevTime - 1;
       });
-
-      setProgress((prev) => (time / modeDurations[mode]) * 100);
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [isRunning, mode, time]);
+  }, [isRunning]);
 
-  // Formata o tempo para mm:ss
-  function formatTime(seconds) {
+  // Atualiza a barra de progresso
+  useEffect(() => {
+    const totalTime = isBreak
+      ? focusCycles % cyclesBeforeLongBreak === 0
+        ? longBreakDuration
+        : shortBreakDuration
+      : focusDuration;
+
+    setProgress((time / totalTime) * 100);
+  }, [time, isBreak]);
+
+  // Alterna entre Foco, Short Break e Long Break
+  const handleSkip = () => {
+    if (!isBreak) {
+      if ((focusCycles + 1) % cyclesBeforeLongBreak === 0) {
+        setTime(longBreakDuration);
+      } else {
+        setTime(shortBreakDuration);
+      }
+      setIsBreak(true);
+    } else {
+      setTime(focusDuration);
+      setIsBreak(false);
+      setFocusCycles((prev) => prev + 1);
+    }
+    setIsRunning(false);
+  };
+
+  // Reseta o timer para o início do ciclo de foco
+  const resetTimer = () => {
+    setIsRunning(false);
+    setIsBreak(false);
+    setFocusCycles(0);
+    setTime(focusDuration);
+    setProgress(100);
+  };
+
+  // Formata o tempo para "MM:SS"
+  const formatTime = (seconds) => {
     const minutes = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${String(minutes).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
-  }
-
-  // Reseta o tempo para o valor do modo atual
-  function resetTimer() {
-    setTime(modeDurations[mode]);
-    setIsRunning(false);
-    setProgress(0);
-  }
-
-  // Pula para o próximo ciclo
-  function handleSkip() {
-    if (mode === "focus") {
-      setFocusCycles((prev) => prev + 1);
-      setMode(focusCycles % 4 === 0 ? "longBreak" : "shortBreak");
-    } else {
-      setMode("focus");
-    }
-  }
+  };
 
   return {
     time,
     isRunning,
-    setIsRunning,
+    isBreak,
     focusCycles,
     progress,
-    formatTime,
-    resetTimer,
+    setIsRunning,
     handleSkip,
-    mode,
-    setMode, // Para alternar entre os modos no toggle
+    resetTimer,
+    formatTime,
   };
 }
