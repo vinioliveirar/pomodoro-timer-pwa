@@ -29,6 +29,7 @@ export default function Timer() {
   };
 
   const progress = (time / maxTime) * 100;
+  console.log("Progresso da barra:", progress);
 
   // Executa o som de alarme quando o tempo chega a zero
   useEffect(() => {
@@ -42,7 +43,7 @@ export default function Timer() {
       <div className="bg-gray-800/80 p-8 rounded-2xl shadow-lg w-full max-w-md text-center">
         <StageButtons mode={mode} changeMode={changeMode} />
         <TimerDisplay time={time} />
-        <ProgressBar progress={progress} />
+        <ProgressBar progress={progress} mode={mode} />
         <ControlButtons
           isRunning={isRunning}
           handleStartStop={handleStartStop}

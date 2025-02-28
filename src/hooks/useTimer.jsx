@@ -5,6 +5,10 @@ export default function useTimer() {
   const [isRunning, setIsRunning] = useState(false);
   const [mode, setMode] = useState("focus"); // "focus", "shortBreak", "longBreak"
   const [focusCycles, setFocusCycles] = useState(0); // Contador de ciclos de foco
+  //const [initialTime, setInitialTime] = useState(1500);
+
+  // Definir tempo máximo baseado no modo atual
+  const maxTime = mode === "focus" ? 1500 : mode === "shortBreak" ? 300 : 900;
 
   // Função para iniciar/pausar o timer
   const handleStartStop = () => {
@@ -67,6 +71,7 @@ export default function useTimer() {
     time,
     isRunning,
     mode,
+    maxTime,
     focusCycles,
     handleStartStop,
     handleReset,
