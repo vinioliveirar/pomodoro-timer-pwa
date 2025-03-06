@@ -1,4 +1,3 @@
-// src/components/Timer.jsx
 import { useEffect } from "react";
 import useTimer from "../../hooks/useTimer.jsx";
 import TimerDisplay from "../TimerDisplay/TimerDisplay.jsx";
@@ -29,7 +28,21 @@ export default function Timer() {
   };
 
   const progress = (time / maxTime) * 100;
-  console.log("Progresso da barra:", progress);
+
+  // Define o nome correto do modo para o título da página
+  const modeTitle =
+    {
+      focus: "Pomodoro",
+      shortBreak: "Pausa Curta",
+      longBreak: "Pausa Longa",
+    }[mode] || "Pomodoro";
+
+  // Atualiza o título da página com o tempo restante e o modo atual
+  useEffect(() => {
+    document.title = isRunning
+      ? `${modeTitle} - ${Math.floor(time / 60)}:${String(time % 60).padStart(2, "0")}`
+      : "Pomodoro Timer";
+  }, [time, isRunning, mode]);
 
   // Executa o som de alarme quando o tempo chega a zero
   useEffect(() => {
@@ -39,7 +52,7 @@ export default function Timer() {
   }, [time]);
 
   return (
-    <section className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white">
+    <section className="flex flex-col items-center justify-center mb-2 bg-gray-900 text-white">
       <div className="bg-gray-800/80 p-8 rounded-2xl shadow-lg w-full max-w-md text-center">
         <StageButtons mode={mode} changeMode={changeMode} />
         <TimerDisplay time={time} />
