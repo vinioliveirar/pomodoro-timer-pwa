@@ -1,21 +1,28 @@
 import { useState, useEffect, useCallback } from "react";
+import beepSound from "../assets/sounds/beep.mp3"; // ✅ Caminho correto do som
 
 export default function useTimer() {
-  const [time, setTime] = useState(1500); // Tempo em segundos (25 minutos)
+  const [time, setTime] = useState(1500);
   const [isRunning, setIsRunning] = useState(false);
-  const [mode, setMode] = useState("focus"); // "focus", "shortBreak", "longBreak"
-  const [focusCycles, setFocusCycles] = useState(0); // Contador de ciclos de foco
-  //const [initialTime, setInitialTime] = useState(1500);
+  const [mode, setMode] = useState("focus");
+  const [focusCycles, setFocusCycles] = useState(0);
 
-  // Definir tempo máximo baseado no modo atual
   const maxTime = mode === "focus" ? 1500 : mode === "shortBreak" ? 300 : 900;
 
-  // Função para iniciar/pausar o timer
+  // ✅ Função para tocar o som de alarme
+  const playAlarm = useCallback(() => {
+    const alarmSound = new Audio(beepSound);
+    alarmSound
+      .play()
+      .catch((error) => console.error("Erro ao reproduzir som:", error));
+  }, []);
+
+  // ✅ Função para iniciar/pausar o timer
   const handleStartStop = () => {
     setIsRunning((prev) => !prev);
   };
 
-  // Função para resetar o timer
+  // ✅ Função para resetar o timer
   const handleReset = () => {
     setIsRunning(false);
     setMode("focus");
@@ -23,21 +30,16 @@ export default function useTimer() {
     setFocusCycles(0);
   };
 
-  // Função para trocar o modo (Pomodoro, Short Break, Long Break)
-  // Define o tempo com base no modo escolhido
+  // ✅ Função para trocar o modo
   const changeMode = (newMode) => {
-    setIsRunning(false); // Pausa o timer ao mudar o modo
+    setIsRunning(false);
     setMode(newMode);
-
-    if (newMode === "focus") setTime(1500); // Pomodoro (25 min)
-    if (newMode === "shortBreak") setTime(300); // Short Break (5 min)
-    if (newMode === "longBreak") setTime(900); // Long Break (15 min)
+    setTime(newMode === "focus" ? 1500 : newMode === "shortBreak" ? 300 : 900);
   };
 
-  // Função para avançar para o próximo estágio
+  // ✅ Função para avançar para o próximo estágio
   const handleSkip = useCallback(() => {
     setIsRunning(false);
-
     if (mode === "focus") {
       const nextMode = focusCycles >= 3 ? "longBreak" : "shortBreak";
       setMode(nextMode);
@@ -49,23 +51,25 @@ export default function useTimer() {
     }
   }, [mode, focusCycles]);
 
-  // Lógica do timer
+  // ✅ Lógica do timer (Corrigida para evitar atrasos em segundo plano)
   useEffect(() => {
-    let timer;
-    if (isRunning && time > 0) {
-      timer = setInterval(() => {
-        setTime((prevTime) => {
-          if (prevTime === 1) {
-            clearInterval(timer);
-            handleSkip();
-            return prevTime;
-          }
-          return prevTime - 1;
-        });
-      }, 1000);
-    }
+    if (!isRunning || time <= 0) return;
+
+    const endTime = Date.now() + time * 1000;
+    const timer = setInterval(() => {
+      const remainingTime = Math.round((endTime - Date.now()) / 1000);
+      if (remainingTime <= 0) {
+        clearInterval(timer);
+        setTime(0);
+        playAlarm(); // 🔥 Som toca aqui!
+        handleSkip();
+      } else {
+        setTime(remainingTime);
+      }
+    }, 1000);
+
     return () => clearInterval(timer);
-  }, [isRunning, time, handleSkip]);
+  }, [isRunning, time, handleSkip, playAlarm]);
 
   return {
     time,
@@ -77,6 +81,5 @@ export default function useTimer() {
     handleReset,
     handleSkip,
     changeMode,
-    setIsRunning,
   };
 }

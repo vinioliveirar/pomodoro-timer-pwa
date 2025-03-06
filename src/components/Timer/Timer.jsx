@@ -4,7 +4,6 @@ import TimerDisplay from "../TimerDisplay/TimerDisplay.jsx";
 import ControlButtons from "../ControlButtons/ControlButtons.jsx";
 import ProgressBar from "../ProgressBar/ProgressBar.jsx";
 import StageButtons from "../StageButtons/StageButtons.jsx";
-import beepSound from "../../assets/sounds/beep.mp3";
 
 export default function Timer() {
   const {
@@ -16,40 +15,16 @@ export default function Timer() {
     handleReset,
     handleSkip,
     maxTime,
-    setIsRunning,
   } = useTimer();
-
-  // Função para tocar o som de alarme
-  const playAlarm = () => {
-    const alarmSound = new Audio(beepSound);
-    alarmSound
-      .play()
-      .catch((error) => console.error("Erro ao reproduzir som:", error));
-  };
 
   const progress = (time / maxTime) * 100;
 
-  // Define o nome correto do modo para o título da página
-  const modeTitle =
-    {
-      focus: "Pomodoro",
-      shortBreak: "Pausa Curta",
-      longBreak: "Pausa Longa",
-    }[mode] || "Pomodoro";
-
-  // Atualiza o título da página com o tempo restante e o modo atual
+  // ✅ Atualiza o título da aba corretamente
   useEffect(() => {
     document.title = isRunning
-      ? `${modeTitle} - ${Math.floor(time / 60)}:${String(time % 60).padStart(2, "0")}`
+      ? `${mode === "focus" ? "Pomodoro" : mode === "shortBreak" ? "Pausa Curta" : "Pausa Longa"} - ${Math.floor(time / 60)}:${String(time % 60).padStart(2, "0")}`
       : "Pomodoro Timer";
   }, [time, isRunning, mode]);
-
-  // Executa o som de alarme quando o tempo chega a zero
-  useEffect(() => {
-    if (time === 0) {
-      playAlarm();
-    }
-  }, [time]);
 
   return (
     <section className="flex flex-col items-center justify-center mb-2 bg-gray-900 text-white">
@@ -60,10 +35,10 @@ export default function Timer() {
         <ControlButtons
           isRunning={isRunning}
           handleStartStop={handleStartStop}
-          handleReset={handleReset}
           handleSkip={handleSkip}
-          setIsRunning={setIsRunning}
+          handleReset={handleReset}
           time={time}
+          maxTime={maxTime}
         />
       </div>
     </section>

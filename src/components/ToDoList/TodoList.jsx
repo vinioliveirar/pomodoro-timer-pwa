@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { CirclePlus, Trash2 } from "lucide-react";
 
 export default function TodoList() {
   const [tasks, setTasks] = useState([]);
@@ -30,10 +31,13 @@ export default function TodoList() {
           value={task}
           onChange={(e) => setTask(e.target.value)}
           placeholder="Adicionar uma nova tarefa"
-          className="p-2 rounded bg-gray-700 text-white flex-1"
+          className="p-2 rounded bg-gray-700 text-white flex-1 focus:outline-none"
         />
-        <button type="submit" className="bg-blue-500 px-4 py-2 rounded">
-          Adicionar
+        <button
+          type="submit"
+          className="bg-blue-500 px-4 py-2 rounded cursor-pointer"
+        >
+          <CirclePlus />
         </button>
       </form>
       <ul className="mt-4 space-y-2">
@@ -50,9 +54,9 @@ export default function TodoList() {
             </span>
             <button
               onClick={() => removeTask(index)}
-              className="bg-red-500 px-2 py-1 rounded"
+              className="bg-red-500 px-2 py-1 rounded cursor-pointer"
             >
-              X
+              <Trash2 />
             </button>
           </li>
         ))}
