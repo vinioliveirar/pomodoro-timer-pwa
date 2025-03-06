@@ -1,6 +1,6 @@
 import React from "react";
 import Timer from "../../components/Timer/Timer";
-import TodoList from "../../components/ToDoList/ToDoList.jsx";
+import TodoList from "../../components/ToDoList/index.jsx";
 
 export default function Home() {
   return (
