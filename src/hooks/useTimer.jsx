@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import beepSound from "../assets/sounds/beep.mp3"; // ✅ Caminho correto do som
+import beepSound from "../assets/sounds/beep.mp3";
 
 export default function useTimer() {
   const [time, setTime] = useState(1500);
@@ -7,9 +7,17 @@ export default function useTimer() {
   const [mode, setMode] = useState("focus");
   const [focusCycles, setFocusCycles] = useState(0);
 
-  const maxTime = mode === "focus" ? 1500 : mode === "shortBreak" ? 300 : 900;
+  let maxTime;
 
-  // ✅ Função para tocar o som de alarme
+  if (mode === "focus") {
+    maxTime = 1500;
+  } else if (mode === "shortBreak") {
+    maxTime = 300;
+  } else {
+    maxTime = 900; // Caso seja "longBreak"
+  }
+
+  // Função para tocar o som de alarme
   const playAlarm = useCallback(() => {
     const alarmSound = new Audio(beepSound);
     alarmSound
@@ -17,12 +25,12 @@ export default function useTimer() {
       .catch((error) => console.error("Erro ao reproduzir som:", error));
   }, []);
 
-  // ✅ Função para iniciar/pausar o timer
+  // Função para iniciar/pausar o timer
   const handleStartStop = () => {
     setIsRunning((prev) => !prev);
   };
 
-  // ✅ Função para resetar o timer
+  // Função para resetar o timer
   const handleReset = () => {
     setIsRunning(false);
     setMode("focus");
@@ -30,14 +38,24 @@ export default function useTimer() {
     setFocusCycles(0);
   };
 
-  // ✅ Função para trocar o modo
+  // Função para trocar o modo
   const changeMode = (newMode) => {
     setIsRunning(false);
     setMode(newMode);
-    setTime(newMode === "focus" ? 1500 : newMode === "shortBreak" ? 300 : 900);
+
+    let newTime;
+    if (newMode === "focus") {
+      newTime = 1500;
+    } else if (newMode === "shortBreak") {
+      newTime = 300;
+    } else {
+      newTime = 900; // Caso seja "longBreak"
+    }
+
+    setTime(newTime);
   };
 
-  // ✅ Função para avançar para o próximo estágio
+  // Função para avançar para o próximo estágio
   const handleSkip = useCallback(() => {
     setIsRunning(false);
     if (mode === "focus") {
@@ -51,7 +69,7 @@ export default function useTimer() {
     }
   }, [mode, focusCycles]);
 
-  // ✅ Lógica do timer (Corrigida para evitar atrasos em segundo plano)
+  // Lógica do timer (Corrigida para evitar atrasos em segundo plano)
   useEffect(() => {
     if (!isRunning || time <= 0) return;
 
@@ -61,7 +79,7 @@ export default function useTimer() {
       if (remainingTime <= 0) {
         clearInterval(timer);
         setTime(0);
-        playAlarm(); // 🔥 Som toca aqui!
+        playAlarm();
         handleSkip();
       } else {
         setTime(remainingTime);

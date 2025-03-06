@@ -19,10 +19,21 @@ export default function Timer() {
 
   const progress = (time / maxTime) * 100;
 
-  // ✅ Atualiza o título da aba corretamente
+  // Atualiza o título da aba corretamente
   useEffect(() => {
+    // Define o título baseado no modo
+    let modeTitle;
+    if (mode === "focus") {
+      modeTitle = "Pomodoro";
+    } else if (mode === "shortBreak") {
+      modeTitle = "Pausa Curta";
+    } else if (mode === "longBreak") {
+      modeTitle = "Pausa Longa";
+    }
+
+    // Define o título da aba
     document.title = isRunning
-      ? `${mode === "focus" ? "Pomodoro" : mode === "shortBreak" ? "Pausa Curta" : "Pausa Longa"} - ${Math.floor(time / 60)}:${String(time % 60).padStart(2, "0")}`
+      ? `${modeTitle} - ${Math.floor(time / 60)}:${String(time % 60).padStart(2, "0")}`
       : "Pomodoro Timer";
   }, [time, isRunning, mode]);
 

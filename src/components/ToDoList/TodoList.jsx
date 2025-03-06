@@ -43,17 +43,17 @@ export default function TodoList() {
       <ul className="mt-4 space-y-2">
         {tasks.map((t, index) => (
           <li
-            key={index}
+            key={t.id} // Usando index como chave para cada item
             className={`flex justify-between items-center p-2 rounded ${t.completed ? "line-through text-gray-400" : ""}`}
           >
-            <span
-              onClick={() => toggleTask(index)}
+            <button
+              onClick={() => toggleTask(index)} // Passando index corretamente
               className="cursor-pointer flex-1"
             >
               {t.text}
-            </span>
+            </button>
             <button
-              onClick={() => removeTask(index)}
+              onClick={() => removeTask(index)} // Passando index corretamente
               className="bg-red-500 px-2 py-1 rounded cursor-pointer"
             >
               <Trash2 />
